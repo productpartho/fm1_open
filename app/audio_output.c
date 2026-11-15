@@ -2,6 +2,7 @@
 #include "audio_output.h"
 #include "fm1_engine_control.h"
 #include "fm1_audio_io.h"
+#include "ajbox/ajapp.h"
 
 static unsigned output_gain;
 static int32_t usb_pcm[FM1_BLOCK_WORDS] __attribute__((aligned(32)));
@@ -19,6 +20,9 @@ static inline __attribute__((always_inline)) int32_t limit(int64_t value)
 FM1_AUDIO_CODE void fm1_output_mix(int32_t *output)
 {
     if (!output) return;
+    /* AJ Box: Wobble, Wah, Crunch, Stutter and Swoosh on the finished mix,
+     * ahead of the volume and the limiter below. */
+    ajapp_audio(output, FM1_BLOCK_FRAMES);
     unsigned target = fm1_engine_output_level();
     if (target > 127U) target = 127U;
     int delta = (int)target - (int)output_gain;
