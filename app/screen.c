@@ -66,8 +66,7 @@ void groove_screen_init(void)
     ajpanel_init();
     const uint32_t now = fm1_millis();
     ajscreen_init(now);
-    /* Which battery readings mean full and low is not known yet: leave the
-     * battery picture out and show the reading in parent mode instead. */
+    /* No battery picture until the first reading has come in (ajscreen_battery_reading). */
     ajscreen_battery(AJSCREEN_BATTERY_UNKNOWN, 0, now);
     readings_at = now;
     ajapp_chime();
@@ -90,6 +89,9 @@ void groove_screen_control(void)
         fm1_audio_stats_read(&output);
         groove_audio_stats(&render);
         ajscreen_readings(controls.battery, engine.underruns + output.overruns + render.overloads);
+#ifndef FM1_HOST_TEST   /* the simulator's battery always reads 900; the desktop tests feed their own readings */
+        ajscreen_battery_reading(controls.battery, now);
+#endif
         readings_at = now;
     }
     (void)ajscreen_draw(now, 1);
